@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "cic"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "==3.8"
+numpy = "^1.20.2"
+scipy = "^1.6.2"
+matplotlib = "^3.4.1"
+cocotb = "^1.5.1"
+cocotb-test = "^0.2.0"
+pytest-parallel = "^0.1.0"
+pytest-cov = "^2.11.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

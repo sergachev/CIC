@@ -44,14 +44,11 @@ The Xilinx CIC core does not specify how it performs rounding. The datasheet of 
 
 ## Verification
 To run the unit tests install
-- python >3.8
-- iverilog >1.4
-- python modules: cocotb, cocotb_test, pytest, pytest-parallel, pytest-cov
+- python == 3.8, poetry
+- iverilog (tested with 12.0 s20150603-1120-gd8cb29f6; v10.3 is too old)
+- python modules via `poetry install`
 
-and run pytest in the repo directory
-```
-pytest -v --workers 10
-```
+and run `make` in the repo directory
 
 ## TODO
 - add CIC interpolator

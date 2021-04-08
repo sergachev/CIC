@@ -1,17 +1,11 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Timer
-from cocotb.triggers import RisingEdge, ReadOnly
-from fixedpoint import FixedPoint
-from collections import deque
+from cocotb.triggers import RisingEdge
 
 import random
-import warnings
 import os
 import logging
-import cocotb_test.simulator
-import pytest
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal

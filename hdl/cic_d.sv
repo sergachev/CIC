@@ -97,8 +97,8 @@ module cic_d
     assign downsampler_rate_valid = s_axis_rate_tvalid;
     (* ram_style = "distributed" *)reg unsigned [      SCALING_FACTOR_WIDTH-1:0] LUT [1:CIC_R];
     (* ram_style = "distributed" *)reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] LUT2[1:CIC_R];
-    if (DO_LUT_CALC) begin
-        initial begin
+    initial begin
+        if (DO_LUT_CALC) begin
             // this LUT calculation in verilog is limited, it works for R=4095, N=6, M=1
             // if larger values are needed, do LUT calculation outside verilog, ie python
             reg unsigned [127:0] gain_diff;
@@ -122,6 +122,11 @@ module cic_d
                         pre_shift[SCALING_FACTOR_WIDTH-1:0], 128'(2) ** pre_shift,
                         gain_diff >> NUM_SHIFT_HELPER, post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0]);
             end
+            $writememh("LUT.txt", LUT);
+            $writememh("LUT2.txt", LUT2);
+        end else begin
+            $readmemh("LUT.txt", LUT);
+            $readmemh("LUT2.txt", LUT2);    
         end
     end
     reg unsigned [      SCALING_FACTOR_WIDTH-1:0] scaling_factor_buf = 0;

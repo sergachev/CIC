@@ -1,6 +1,6 @@
 # CIC Decimator
 ## Overview
-This project is based on https://opencores.org/projects/cic_core_2 by Egor Igragimov and on https://opencores.org/projects/cic_core by Vadim Kotelnikov.
+This project is based on https://opencores.org/projects/cic_core_2 by Egor Ibragimov and on https://opencores.org/projects/cic_core by Vadim Kotelnikov.
 
 The main differences are
 - added variable/programmable downsampling rate

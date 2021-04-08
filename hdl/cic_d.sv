@@ -122,12 +122,11 @@ module cic_d
                         pre_shift[SCALING_FACTOR_WIDTH-1:0], 128'(2) ** pre_shift,
                         gain_diff >> NUM_SHIFT_HELPER, post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0]);
             end
-            $writememh("LUT.txt", LUT);
-            $writememh("LUT2.txt", LUT2);
-        end else begin
-            $readmemh("LUT.txt", LUT);
-            $readmemh("LUT2.txt", LUT2);    
+            $writememh("LUT.mem", LUT);
+            $writememh("LUT2.mem", LUT2);
         end
+        $readmemh("LUT.mem", LUT);
+        $readmemh("LUT2.mem", LUT2);
     end
     reg unsigned [      SCALING_FACTOR_WIDTH-1:0] scaling_factor_buf = 0;
     reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] exact_scaling_factor_buf = 0;

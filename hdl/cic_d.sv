@@ -13,7 +13,8 @@ module cic_d
     parameter VAR_RATE = 1,
     parameter EXACT_SCALING = 1,
     parameter PRG_SCALING = 0,
-    parameter NUM_SHIFT = 5 * CIC_N
+    parameter NUM_SHIFT = 5 * CIC_N,
+    parameter DO_LUT_CALC = 1
 )
 /*********************************************************************************************/
 (
@@ -96,32 +97,33 @@ module cic_d
     assign downsampler_rate_valid = s_axis_rate_tvalid;
     (* ram_style = "distributed" *)reg unsigned [      SCALING_FACTOR_WIDTH-1:0] LUT [1:CIC_R];
     (* ram_style = "distributed" *)reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] LUT2[1:CIC_R];
-    initial begin
-      // this LUT calculation in verilog is limited, it works for R=4095, N=6, M=1
-      // if larger values are needed, do LUT calculation outside verilog, ie python
-      reg unsigned [127:0] gain_diff;
-      reg unsigned [31:0] pre_shift;
-      reg unsigned [127:0] post_mult;
-      reg unsigned [clog2_l(CIC_R):0] small_r;
-      $display("R = %d  N = %d  M = %d  INP_DW = %d  OUT_DW = %d  NUM_SHIFT = %d", CIC_R, CIC_N,
-               CIC_N, INP_DW, OUT_DW, NUM_SHIFT_HELPER);
-      for (integer r = 1; r <= CIC_R; r++) begin
-        small_r = r[clog2_l(CIC_R):0];
-        gain_diff = (((128'(CIC_R) << (NUM_SHIFT_HELPER / CIC_N)) / 128'(r)) ** CIC_N);
-        pre_shift = flog2_l(gain_diff >> (NUM_SHIFT_HELPER));
-        LUT[small_r] = pre_shift[SCALING_FACTOR_WIDTH-1:0];
-        if (EXACT_SCALING) begin
-          // this calculation only makes the frequency response equal to the r = CIC_R case
-          // but it does not make it 1! The calculation to make it 1 is too much for verilog :/
-          post_mult = (gain_diff >> pre_shift);
-          LUT2[small_r] = post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0];
+    if (DO_LUT_CALC) begin
+        initial begin
+            // this LUT calculation in verilog is limited, it works for R=4095, N=6, M=1
+            // if larger values are needed, do LUT calculation outside verilog, ie python
+            reg unsigned [127:0] gain_diff;
+            reg unsigned [31:0] pre_shift;
+            reg unsigned [127:0] post_mult;
+            reg unsigned [clog2_l(CIC_R):0] small_r;
+            $display("R = %d  N = %d  M = %d  INP_DW = %d  OUT_DW = %d  NUM_SHIFT = %d", CIC_R, CIC_N,
+                    CIC_N, INP_DW, OUT_DW, NUM_SHIFT_HELPER);
+            for (integer r = 1; r <= CIC_R; r++) begin
+                small_r = r[clog2_l(CIC_R):0];
+                gain_diff = (((128'(CIC_R) << (NUM_SHIFT_HELPER / CIC_N)) / 128'(r)) ** CIC_N);
+                pre_shift = flog2_l(gain_diff >> (NUM_SHIFT_HELPER));
+                LUT[small_r] = pre_shift[SCALING_FACTOR_WIDTH-1:0];
+                if (EXACT_SCALING) begin
+                // this calculation only makes the frequency response equal to the r = CIC_R case
+                // but it does not make it 1! The calculation to make it 1 is too much for verilog :/
+                post_mult = (gain_diff >> pre_shift);
+                LUT2[small_r] = post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0];
+                end
+                $display("scaling_factor[%d] = %d  factor rounded = %d  factor exact = %d  mult = %d", r,
+                        pre_shift[SCALING_FACTOR_WIDTH-1:0], 128'(2) ** pre_shift,
+                        gain_diff >> NUM_SHIFT_HELPER, post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0]);
+            end
         end
-        $display("scaling_factor[%d] = %d  factor rounded = %d  factor exact = %d  mult = %d", r,
-                 pre_shift[SCALING_FACTOR_WIDTH-1:0], 128'(2) ** pre_shift,
-                 gain_diff >> NUM_SHIFT_HELPER, post_mult[EXACT_SCALING_FACTOR_WIDTH-1:0]);
-      end
     end
-
     reg unsigned [      SCALING_FACTOR_WIDTH-1:0] scaling_factor_buf = 0;
     reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] exact_scaling_factor_buf = 0;
     always_ff @(posedge clk) begin
@@ -222,10 +224,17 @@ module cic_d
 
     always_ff @(posedge clk) begin
       foreach (data_buf[j]) begin
-        data_buf[j] <= !reset_n ? 0 : (j == 0 ? int_stage[CIC_N-1].int_out : data_buf[j-1]);
-        valid_buf[j] <= !reset_n ? 0 : (j == 0 ? int_stage[CIC_N-1].valid_out : valid_buf[j-1]);
-        rate_data_buf[j] <= !reset_n ? 0 : (j == 0 ? config_data : rate_data_buf[j-1]);
-        rate_valid_buf[j] <= !reset_n ? 0 : (j == 0 ? downsampler_rate_valid : rate_valid_buf[j-1]);
+        if (j == 0) begin
+            data_buf[0] <= !reset_n ? 0 : int_stage[CIC_N-1].int_out;
+            valid_buf[0] <= !reset_n ? 0 : int_stage[CIC_N-1].valid_out;
+            rate_data_buf[0] <= !reset_n ? 0 : config_data;
+            rate_valid_buf[0] <= !reset_n ? 0 : downsampler_rate_valid;
+        end else begin
+            data_buf[j] <= !reset_n ? 0 : data_buf[j-1];
+            valid_buf[j] <= !reset_n ? 0 : valid_buf[j-1];
+            rate_data_buf[j] <= !reset_n ? 0 : rate_data_buf[j-1];
+            rate_valid_buf[j] <= !reset_n ? 0 : rate_valid_buf[j-1];
+        end
       end
     end
     downsampler_variable #(

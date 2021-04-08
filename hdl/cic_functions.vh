@@ -13,7 +13,7 @@ function reg unsigned [127 : 0] nchoosek;  ///< Binomial coefficient
   reg unsigned [127:0] tmp;
   integer i;
   begin
-    tmp = 1.0;
+    tmp = 1;
     for (i = 1; i <= (n - k); i = i + 1) tmp = tmp * (128'(k) + 128'(i)) / 128'(i);
     nchoosek = tmp;
   end

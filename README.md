@@ -48,7 +48,7 @@ To run the unit tests install
 - iverilog (tested with 12.0 s20150603-1120-gd8cb29f6; v10.3 is too old)
 - python modules via `poetry install`
 
-and run `make` in the repo directory
+and run `make test` in the repo directory
 
 ## TODO
 - add CIC interpolator

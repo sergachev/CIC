@@ -95,8 +95,8 @@ module cic_d
   // this is here as a compatibility modus for the Xilinx CIC
   if (!PRG_SCALING && VAR_RATE) begin
     assign downsampler_rate_valid = s_axis_rate_tvalid;
-    (* ram_style = "distributed" *)reg unsigned [      SCALING_FACTOR_WIDTH-1:0] LUT [1:CIC_R];
-    (* ram_style = "distributed" *)reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] LUT2[1:CIC_R];
+    reg unsigned [      SCALING_FACTOR_WIDTH-1:0] LUT [1:CIC_R];
+    reg unsigned [EXACT_SCALING_FACTOR_WIDTH-1:0] LUT2[1:CIC_R];
     initial begin
         if (DO_LUT_CALC) begin
             // this LUT calculation in verilog is limited, it works for R=4095, N=6, M=1
